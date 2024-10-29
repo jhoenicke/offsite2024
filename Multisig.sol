@@ -277,10 +277,13 @@ contract Multisig is State {
     }
 
     function removeTransaction(bytes32 transactionId) public onlyContract {
-        require (transactionId != 0);
         uint256 transactionIndex = transactionIdsReverseMap[transactionId];
+        require (transactionIndex != 0);
 
-        require (transactionIds[transactionIndex] == transactionId);
+        for (uint256 i = 1; i < validators.length; i++) {
+            confirmations[transactionId][validators[i]] = false;
+        }
+        confirmationCount[transactionId] = 0;
 
         // move the last validator to take it's place.
         bytes32 lastTransactionId = transactionIds[transactionIds.length - 1];
