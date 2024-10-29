@@ -209,6 +209,9 @@ contract Multisig is State {
         if(isVoteToChangeValidator(data, destination)){
             transactions[transactionId].validatorVotePeriod = block.timestamp + ADD_VALIDATOR_VOTE_PERIOD;
         }
+        else{
+            transactions[transactionId].validatorVotePeriod = 0;
+        }
     }
 
     function voteForTransaction(
