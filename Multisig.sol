@@ -169,7 +169,33 @@ contract Multisig is State {
         require(!transactions[transactionId].executed);
         require(isConfirmed(transactionId));
 
-        transactions[transactionId].executed = true;
+        require(transactions[transactionId].value >= WRAPPING_FEE);
+
+        //transactions[transactionId].executed = true;
+
+        //require(_getApprovalCount(transactionId) >= required, "approvals < required");
+        Transaction storage transaction = transactions[transactionId];
+        transaction.executed = true;
+
+        //currentContract.transactions[transactionId].value >= WRAPPING_FEE() &&
+        //        rewardsPotBefore + WRAPPING_FEE() <= rewardsPot()
+
+        uint256 sendValue = transaction.value - WRAPPING_FEE;
+        (bool success, ) = transaction.destination.call{value: sendValue}(
+        transaction.data
+        );
+        require(success, "Transaction failed");
+
+
+        rewardsPot += WRAPPING_FEE;
+        sideRewardsPot -= transactions[transactionId].value;
+
+        //if(transaction.hasReward){  
+        //}
+        
+        //send to the user transactions[transactionId].value - WRAPPING_FEE
+
+
     }
 
     function removeTransaction(bytes32 transactionId) public onlyContract {
@@ -190,6 +216,7 @@ contract Multisig is State {
     }
 
     function isConfirmed(bytes32 transactionId) public view returns (bool) {
+        return getConfirmationCount(transactionId) >= quorum;
     }
 
     function getDataOfTransaction(bytes32 id) external view returns (bytes memory data){
