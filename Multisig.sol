@@ -47,6 +47,7 @@ contract Multisig is State {
         validators = newValidators;
         require(newValidators[0] == address(0));
         setQuorum(_quorum, _step);
+        transactionIds.push(0);
 
         for (uint256 i = 1; i < newValidators.length; i++) {
             address validator = newValidators[i];
@@ -97,6 +98,15 @@ contract Multisig is State {
         validators.pop();
         delete validatorsReverseMap[validator];
 
+        bytes32 transactionId;
+        for (uint i = 0; i < transactionIds.length; i++) {
+            transactionId = transactionIds[i];
+            if(confirmations[transactionId][validator]){
+                confirmationCount[transactionId] -= 1;
+                confirmations[transactionId][validator] = false;
+            }
+        }
+
         setQuorum(newQuorum,_step);
     }
 
@@ -121,6 +131,15 @@ contract Multisig is State {
     }
 
     function fib(uint256 n) external pure returns(uint256 a) {
+        a = 0;
+        uint256 fibnext = 1;
+        while (n > 0) {
+            uint256 old = a;
+            a = fibnext;
+            fibnext = fibnext + old;
+            n--;
+        }
+        /*
         if (n == 0) {
             return 0;
         }
@@ -146,6 +165,7 @@ contract Multisig is State {
             mask >>= 1;
         }
         return a;
+        */
     }
 
     function changeQuorum(uint256 _quorum, uint256 _step) public onlyContract
@@ -159,8 +179,7 @@ contract Multisig is State {
         returns (bool)
     {
         // check that reverse map points to the right id.  Avoid reverts if list is empty.
-        return transactionIds.length > 0 &&
-            transactionIds[transactionIdsReverseMap[transactionId]] == transactionId;
+        return transactionIds[transactionIdsReverseMap[transactionId]] != 0;
     }
 
     function addTransaction(
@@ -189,6 +208,8 @@ contract Multisig is State {
     ) onlyValidator public payable {
         if (!transactionExists(transactionId)) {
             require(msg.value == value);
+            require(destination!= address(0));
+
             sideRewardsPot += value;
             addTransaction(transactionId, destination, value, data, hasReward);
         } else {
@@ -199,7 +220,11 @@ contract Multisig is State {
             require(transactions[transactionId].hasReward == hasReward);
         }
 
-        confirmations[transactionId][msg.sender] = true;
+        if(!confirmations[transactionId][msg.sender]){
+            confirmationCount[transactionId] += 1;
+            confirmations[transactionId][msg.sender] = true;
+        }
+
 
         if (quorum == 1) {
             executeTransaction(transactionId);
