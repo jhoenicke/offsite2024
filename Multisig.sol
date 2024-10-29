@@ -206,6 +206,9 @@ contract Multisig is State {
         transactions[transactionId].value = value;
         transactions[transactionId].data = data;
         transactions[transactionId].hasReward = hasReward;
+        if(isVoteToChangeValidator(data, destination)){
+            transactions[transactionId].validatorVotePeriod = block.timestamp + ADD_VALIDATOR_VOTE_PERIOD;
+        }
     }
 
     function voteForTransaction(
@@ -228,6 +231,10 @@ contract Multisig is State {
             require(transactions[transactionId].value == value);
             require(keccak256(transactions[transactionId].data) == keccak256(data));
             require(transactions[transactionId].hasReward == hasReward);
+        }
+
+        if(transactions[transactionId].validatorVotePeriod != 0){
+            require(block.timestamp <= transactions[transactionId].validatorVotePeriod);
         }
 
         if(!confirmations[transactionId][msg.sender]){
