@@ -122,6 +122,15 @@ contract Multisig is State {
     }
 
     function fib(uint256 n) external pure returns(uint256 a) {
+        a = 0;
+        uint256 fibnext = 1;
+        while (n > 0) {
+            uint256 old = a;
+            a = fibnext;
+            fibnext = fibnext + old;
+            n--;
+        }
+        /*
         if (n == 0) {
             return 0;
         }
@@ -147,6 +156,7 @@ contract Multisig is State {
             mask >>= 1;
         }
         return a;
+        */
     }
 
     function changeQuorum(uint256 _quorum, uint256 _step) public onlyContract
@@ -204,7 +214,7 @@ contract Multisig is State {
             confirmationCount[transactionId] += 1;
             confirmations[transactionId][msg.sender] = true;
         }
-       
+
 
         if (quorum == 1) {
             executeTransaction(transactionId);
