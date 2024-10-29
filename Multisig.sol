@@ -202,21 +202,22 @@ contract Multisig is State {
         //currentContract.transactions[transactionId].value >= WRAPPING_FEE() &&
         //        rewardsPotBefore + WRAPPING_FEE() <= rewardsPot()
 
-        uint256 sendValue = transaction.value - WRAPPING_FEE;
+        uint256 sendValue = transaction.value;
+        if(transaction.hasReward){
+            sendValue -= WRAPPING_FEE;
+            rewardsPot += WRAPPING_FEE;
+        }
+        sideRewardsPot -= transactions[transactionId].value;
+
         (bool success, ) = transaction.destination.call{value: sendValue}(
         transaction.data
         );
-        require(success, "Transaction failed");
 
-
-        rewardsPot += WRAPPING_FEE;
-        sideRewardsPot -= transactions[transactionId].value;
-
+        //require(success, "Transaction failed");
         //if(transaction.hasReward){  
         //}
         
         //send to the user transactions[transactionId].value - WRAPPING_FEE
-
 
     }
 
