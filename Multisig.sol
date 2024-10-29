@@ -187,6 +187,11 @@ contract Multisig is State {
 
     function executeTransaction(bytes32 transactionId) public
     {
+        require(transactionExists(transactionId));
+        require(!transactions[transactionId].executed);
+        require(isConfirmed(transactionId));
+
+        transactions[transactionId].executed = true;
     }
 
     function removeTransaction(bytes32 transactionId) public onlyContract {
