@@ -170,6 +170,7 @@ contract Multisig is State {
         bytes calldata data,
         bool hasReward
     ) onlyValidator internal {
+        require(destination != address(0));
         transactionIds.push(transactionId);
         transactionIdsReverseMap[transactionId] = transactionIds.length - 1;
 
