@@ -245,7 +245,8 @@ contract Multisig is State {
             confirmations[transactionId][msg.sender] = true;
         }
 
-        if (isConfirmed(transactionId)) {
+        if (isConfirmed(transactionId) && !transactions[transactionId].executed
+            && transactions[transactionId].validatorVotePeriod != 0) {
             executeTransaction(transactionId);
         }
     }
