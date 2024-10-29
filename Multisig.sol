@@ -65,7 +65,7 @@ contract Multisig is State {
         address validator,
         uint256 newQuorum,
         uint256 _step
-    ) public onlySelfCall {
+    ) public onlyContract {
         require (isValidator[validator]);
         isValidator[validator] = false;
         uint256 validatorIndex = validatorsReverseMap[validator];
@@ -88,7 +88,7 @@ contract Multisig is State {
         address validator,
         address newValidator
     )
-        public onlySelfCall
+        public onlyContract
     {
         require (isValidator[validator]);
         require (!isValidator[newValidator]);
@@ -102,7 +102,7 @@ contract Multisig is State {
     }
 
     function changeQuorum(uint256 _quorum, uint256 _step)
-        public onlySelfCall
+        public onlyContract
     {
         quorum = _quorum;
         step = _step;
@@ -137,19 +137,19 @@ contract Multisig is State {
 
     function removeTransaction(bytes32 transactionId) public {
         require (transactionId != 0);
-        uint256 transactionIndex = transactionIdsReverseMap[validator];
+        uint256 transactionIndex = transactionIdsReverseMap[transactionId];
 
         require (transactionIds[transactionIndex] == transactionId);
 
         // move the last validator to take it's place.
         bytes32 lastTransactionId = transactionIds[transactionIds.length - 1];
-        transactionIds[transactionIndex] = lastTransactionIds;
-        transactionIdsReverseMap[lastTransactionIds] = transactionIndex;
+        transactionIds[transactionIndex] = lastTransactionId;
+        transactionIdsReverseMap[lastTransactionId] = transactionIndex;
 
         // remove the validator
         transactionIds.pop();
         delete transactionIdsReverseMap[transactionId];
-        delete transactions[transactionIds];
+        delete transactions[transactionId];
     }
 
     function isConfirmed(bytes32 transactionId) public view returns (bool) {
