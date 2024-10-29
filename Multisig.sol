@@ -46,6 +46,15 @@ contract Multisig is State {
     {
     }
 
+    function setQuorum(uint256 newQuorum, uint256 newStep) internal {
+        require(newQuorum <= validators.length &&
+            newQuorum != 0 &&
+            newQuorum == this.fib(newStep + 1));
+
+        quorum = newQuorum;
+        step = newStep;
+    }
+
     function addValidator(
         address validator,
         uint256 newQuorum,
@@ -57,8 +66,7 @@ contract Multisig is State {
         validatorsReverseMap[validator] = validators.length - 1;
         isValidator[validator] = true;
 
-        quorum = newQuorum;
-        step = _step;
+        setQuorum(newQuorum,_step);
     }
 
     function removeValidator(
@@ -79,8 +87,7 @@ contract Multisig is State {
         validators.pop();
         delete validatorsReverseMap[validator];
 
-        quorum = newQuorum;
-        step = _step;
+        setQuorum(newQuorum,_step);
     }
 
 
@@ -101,11 +108,11 @@ contract Multisig is State {
         delete validatorsReverseMap[validator];
     }
 
-       function fib(uint256 n) external pure returns(uint256 a) { 
+    function fib(uint256 n) external pure returns(uint256 a) {
         if (n == 0) {
-            return 0;   
+            return 0;
         }
-        uint256 h = n / 2; 
+        uint256 h = n / 2;
         uint256 mask = 1;
         // find highest set bit in n
         while(mask <= h) {
@@ -116,13 +123,13 @@ contract Multisig is State {
         uint256 b = 1;
         uint256 c;
         while(mask > 0) {
-            c = a * a+b * b;          
+            c = a * a+b * b;
             if (n & mask > 0) {
-                b = b * (b + 2 * a);  
-                a = c;                
+                b = b * (b + 2 * a);
+                a = c;
             } else {
-                a = a * (2 * b - a);  
-                b = c;                
+                a = a * (2 * b - a);
+                b = c;
             }
             mask >>= 1;
         }
@@ -130,14 +137,13 @@ contract Multisig is State {
     }
 
     function changeQuorum(uint256 _quorum, uint256 _step) public onlyContract
-    { 
-        //uint256 expected_qourum 
+    {
+        //uint256 expected_qourum
         require(_quorum <= validators.length &&
                 _quorum != 0 &&
-                _quorum == this.fib(_step + 1));  
+                _quorum == this.fib(_step + 1));
 
-        quorum = _quorum;
-        step = step;
+        setQuorum(_quorum,_step);
     }
 
     function transactionExists(bytes32 transactionId)
@@ -214,9 +220,9 @@ contract Multisig is State {
         );
 
         //require(success, "Transaction failed");
-        //if(transaction.hasReward){  
+        //if(transaction.hasReward){
         //}
-        
+
         //send to the user transactions[transactionId].value - WRAPPING_FEE
 
     }
