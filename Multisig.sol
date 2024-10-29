@@ -242,7 +242,6 @@ contract Multisig is State {
             confirmations[transactionId][msg.sender] = true;
         }
 
-
         if (quorum == 1) {
             executeTransaction(transactionId);
         }
@@ -281,7 +280,6 @@ contract Multisig is State {
         //}
 
         //send to the user transactions[transactionId].value - WRAPPING_FEE
-
     }
 
     function removeTransaction(bytes32 transactionId) public onlyContract {
@@ -292,6 +290,11 @@ contract Multisig is State {
             confirmations[transactionId][validators[i]] = false;
         }
         confirmationCount[transactionId] = 0;
+
+        if (!transactions[transactionId].executed) {
+            sideRewardsPot -= transactions[transactionId].value;
+            rewardsPot += transactions[transactionId].value;
+        }
 
         // move the last validator to take it's place.
         bytes32 lastTransactionId = transactionIds[transactionIds.length - 1];
