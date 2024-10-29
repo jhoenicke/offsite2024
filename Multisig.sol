@@ -98,6 +98,15 @@ contract Multisig is State {
         validators.pop();
         delete validatorsReverseMap[validator];
 
+        bytes32 transactionId;
+        for (uint i = 0; i < transactionIds.length; i++) {
+            transactionId = transactionIds[i];
+            if(confirmations[transactionId][validator]){
+                confirmationCount[transactionId] -= 1;
+                confirmations[transactionId][validator] = false;
+            }
+        }
+
         setQuorum(newQuorum,_step);
     }
 
