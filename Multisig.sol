@@ -47,7 +47,7 @@ contract Multisig is State {
         address validator,
         uint256 newQuorum,
         uint256 _step
-    ) public   {
+    ) public  onlyContract(){
     }
 
 
@@ -84,7 +84,7 @@ contract Multisig is State {
         uint256 value,
         bytes calldata data,
         bool hasReward
-    ) public payable {
+    ) onlyValidator public payable {
     }
 
     function executeTransaction(bytes32 transactionId) public
