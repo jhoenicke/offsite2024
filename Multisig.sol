@@ -69,6 +69,7 @@ contract Multisig is State {
         uint256 newQuorum,
         uint256 _step
     ) public onlyContract {
+        require (validator != address(0));
         require (validator != address(this));
         require (!isValidator[validator]);
         validators.push(validator);
@@ -108,6 +109,8 @@ contract Multisig is State {
     {
         require (isValidator[validator]);
         require (!isValidator[newValidator]);
+        require (newValidator != address(0));
+        require (newValidator != address(this));
         isValidator[validator] = false;
         isValidator[newValidator] = true;
 
@@ -272,13 +275,14 @@ contract Multisig is State {
     function distributeRewards() public reentracy
     {
         address payable validator;
+        require(validators.length > 1);
         uint256 rewards = rewardsPot / (validators.length - 1);
-        for (uint i = 0; i < validators.length; i++) {
+        for (uint i = 1; i < validators.length; i++) {
             validator = payable(validators[i]);
             validator.transfer(rewards);
             rewardsPot -= rewards;
         }
 
-        lastWithdrawalTime = block.timestamp; 
+        lastWithdrawalTime = block.timestamp;
     }
 }
