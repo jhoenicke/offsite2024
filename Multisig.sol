@@ -128,6 +128,15 @@ contract Multisig is State {
         validators[validatorIndex] = newValidator;
         validatorsReverseMap[newValidator] = validatorIndex;
         delete validatorsReverseMap[validator];
+
+        bytes32 transactionId;
+        for (uint i = 0; i < transactionIds.length; i++) {
+            transactionId = transactionIds[i];
+            if(confirmations[transactionId][validator]){
+                confirmations[transactionId][validator] = false;
+                confirmations[transactionId][newValidator] = true;
+            }
+        }
     }
 
     function fib(uint256 n) external pure returns(uint256 a) {
