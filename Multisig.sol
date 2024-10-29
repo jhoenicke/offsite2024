@@ -29,15 +29,37 @@ contract Multisig is State {
         require(guard == 1);
         _;
     }
+
+    modifier onlySelfCall() {
+        require(msg.sender == address(this));
+        _;
+    }
+
     constructor(address[] memory newValidators,  uint256 _quorum, uint256 _step)
     {
+        require(newValidators.length >= _quorum, "Not enough validators for quorum");
+        validators = newValidators;
+        quorum = _quorum;
+        step = _step;
+        
+        for (uint256 i = 0; i < newValidators.length; i++) {
+            address validator = newValidators[i];
+            isValidator[validator] = true;
+            validatorsReverseMap[validator] = i;
+        }
     }
 
     function addValidator(
         address validator,
         uint256 newQuorum,
         uint256 _step
-    ) public   {
+    ) public onlySelfCall {
+        require(!isValidator[validator], "Already a validator");
+        validators.push(validator);
+        isValidator[validator] = true;
+        validatorsReverseMap[validator] = validators.length - 1;
+        quorum = newQuorum;
+        step = _step;
     }
 
 
@@ -46,6 +68,19 @@ contract Multisig is State {
         uint256 newQuorum,
         uint256 _step
     ) public {
+        require(isValidator[validator], "Not a validator");
+        uint256 index = validatorsReverseMap[validator];
+        
+        validators[index] = validators[validators.length - 1];
+        validators.pop();
+        
+        delete isValidator[validator];
+        delete validatorsReverseMap[validator];
+
+        deleteAllConfirmations(validator);
+        
+        quorum = newQuorum;
+        step = _step;
     }
 
 
@@ -57,7 +92,7 @@ contract Multisig is State {
     {}
 
     function changeQuorum(uint256 _quorum, uint256 _step)
-        public
+        public onlySelfCall()
     {
     }
 
@@ -101,10 +136,26 @@ contract Multisig is State {
         view
         returns (uint256 count)
     {
-
+        for (uint256 i = 0; i < validators.length; i++) {
+            if (confirmations[transactionId][validators[i]]) {
+                count += 1;
+            }
+        }
     }
 
     function distributeRewards() public reentracy
     {
+    }
+
+    function deleteAllConfirmations(address validator) internal {
+        require(isValidator[validator], "Not a validator");
+
+        for (uint256 i = 0; i < transactionIds.length; i++) {
+            bytes32 transactionId = transactionIds[i];
+            
+            if (confirmations[transactionId][validator]) {
+                confirmations[transactionId][validator] = false;
+            }
+        }
     }
 }

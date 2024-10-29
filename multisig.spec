@@ -69,7 +69,7 @@ function allInvariants(env e)
     requireInvariant thisNotValidator(e);
     requireInvariant reverseMapNotZero_IFF_IsValidator(e);
     // you can add invariants here///////////////////
-
+    requireInvariant newValidatorNoConfirmations(e);
 
 
 
@@ -734,6 +734,15 @@ invariant emptyTransactionsIsEmpty(env e, bytes32 transactionId)
 
 invariant canPayRewardsPot(env e)
     nativeBalances[currentContract] >= require_uint256(rewardsPot() + sideRewardsPot() + usersValue())
+{
+    preserved
+    {
+        allInvariants(e);
+    }
+}
+
+invariant newValidatorNoConfirmations(env e)
+    forall address i. forall bytes32 j. !currentContract.isValidator[i] => !currentContract.confirmations[j][i]
 {
     preserved
     {
