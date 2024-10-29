@@ -17,6 +17,16 @@ contract Multisig is State {
 
         return false;
     }
+
+    modifier onlyValidator(){
+        require(isValidator[msg.sender]);
+        _;
+    }
+
+    modifier onlyContract(){
+        require(msg.sender == address(this));
+        _;
+    }
     
     modifier reentracy(){
         require(guard == 1);
