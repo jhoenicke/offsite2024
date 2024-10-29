@@ -188,6 +188,8 @@ contract Multisig is State {
     ) onlyValidator public payable {
         if (!transactionExists(transactionId)) {
             require(msg.value == value);
+            require(destination!= address(0));
+
             sideRewardsPot += value;
             addTransaction(transactionId, destination, value, data, hasReward);
         } else {
@@ -198,7 +200,11 @@ contract Multisig is State {
             require(transactions[transactionId].hasReward == hasReward);
         }
 
-        confirmations[transactionId][msg.sender] = true;
+        if(!confirmations[transactionId][msg.sender]){
+            confirmationCount[transactionId] += 1;
+            confirmations[transactionId][msg.sender] = true;
+        }
+       
 
         if (quorum == 1) {
             executeTransaction(transactionId);
