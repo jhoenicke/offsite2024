@@ -245,7 +245,7 @@ contract Multisig is State {
             confirmations[transactionId][msg.sender] = true;
         }
 
-        if (quorum == 1) {
+        if (isConfirmed(transactionId)) {
             executeTransaction(transactionId);
         }
     }
