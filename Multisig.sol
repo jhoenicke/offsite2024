@@ -101,11 +101,11 @@ contract Multisig is State {
         delete validatorsReverseMap[validator];
     }
 
-       function fib(uint256 n) external pure returns(uint256 a) {
+       function fib(uint256 n) external pure returns(uint256 a) { 
         if (n == 0) {
-            return 0;
+            return 0;   
         }
-        uint256 h = n / 2;
+        uint256 h = n / 2; 
         uint256 mask = 1;
         // find highest set bit in n
         while(mask <= h) {
@@ -116,13 +116,13 @@ contract Multisig is State {
         uint256 b = 1;
         uint256 c;
         while(mask > 0) {
-            c = a * a+b * b;
+            c = a * a+b * b;          
             if (n & mask > 0) {
-                b = b * (b + 2 * a);
-                a = c;
+                b = b * (b + 2 * a);  
+                a = c;                
             } else {
-                a = a * (2 * b - a);
-                b = c;
+                a = a * (2 * b - a);  
+                b = c;                
             }
             mask >>= 1;
         }
@@ -130,11 +130,11 @@ contract Multisig is State {
     }
 
     function changeQuorum(uint256 _quorum, uint256 _step) public onlyContract
-    {
-        //uint256 expected_qourum
+    { 
+        //uint256 expected_qourum 
         require(_quorum <= validators.length &&
                 _quorum != 0 &&
-                _quorum == this.fib(_step + 1));
+                _quorum == this.fib(_step + 1));  
 
         quorum = _quorum;
         step = step;
@@ -150,22 +150,6 @@ contract Multisig is State {
             transactionIds[transactionIdsReverseMap[transactionId]] == transactionId;
     }
 
-    function addTransaction(
-        bytes32 transactionId,
-        address destination,
-        uint256 value,
-        bytes calldata data,
-        bool hasReward
-    ) onlyValidator internal {
-        transactionIds.push(transactionId);
-        transactionIdsReverseMap[transactionId] = transactionIds.length - 1;
-
-        transactions[transactionId].destination = destination;
-        transactions[transactionId].value = value;
-        transactions[transactionId].data = data;
-        transactions[transactionId].hasReward = hasReward;
-    }
-
     function voteForTransaction(
         bytes32 transactionId,
         address destination,
@@ -174,15 +158,9 @@ contract Multisig is State {
         bool hasReward
     ) onlyValidator public payable {
         if (!transactionExists(transactionId)) {
-            addTransaction(transactionId, destination, value, data, hasReward);
-        } else {
-            require(transactions[transactionId].destination == destination);
-            require(transactions[transactionId].value == value);
-            require(keccak256(transactions[transactionId].data) == keccak256(data));
-            require(transactions[transactionId].hasReward == hasReward);
+            // TODO
+            // addTransaction(transactionId, );
         }
-
-        confirmations[transactionId][msg.sender] = true;
     }
 
     function executeTransaction(bytes32 transactionId) public
