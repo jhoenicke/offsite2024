@@ -47,6 +47,7 @@ contract Multisig is State {
         validators = newValidators;
         require(newValidators[0] == address(0));
         setQuorum(_quorum, _step);
+        transactionIds.push(0);
 
         for (uint256 i = 1; i < newValidators.length; i++) {
             address validator = newValidators[i];
@@ -159,8 +160,7 @@ contract Multisig is State {
         returns (bool)
     {
         // check that reverse map points to the right id.  Avoid reverts if list is empty.
-        return transactionIds.length > 0 &&
-            transactionIds[transactionIdsReverseMap[transactionId]] == transactionId;
+        return transactionIds[transactionIdsReverseMap[transactionId]] != 0;
     }
 
     function addTransaction(
