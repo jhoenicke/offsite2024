@@ -138,11 +138,6 @@ contract Multisig is State {
 
     function changeQuorum(uint256 _quorum, uint256 _step) public onlyContract
     {
-        //uint256 expected_qourum
-        require(_quorum <= validators.length &&
-                _quorum != 0 &&
-                _quorum == this.fib(_step + 1));
-
         setQuorum(_quorum,_step);
     }
 
@@ -267,5 +262,14 @@ contract Multisig is State {
 
     function distributeRewards() public reentracy
     {
+        address payable validator;
+        uint256 rewards = rewardsPot / (validators.length - 1);
+        for (uint i = 0; i < validators.length; i++) {
+            validator = payable(validators[i]);
+            validator.transfer(rewards);
+            rewardsPot -= rewards;
+        }
+
+        lastWithdrawalTime = block.timestamp; 
     }
 }
