@@ -215,6 +215,7 @@ contract Multisig is State {
         bytes calldata data,
         bool hasReward
     ) onlyValidator public payable {
+        require(transactionId != 0);
         if (!transactionExists(transactionId)) {
             require(msg.value == value);
             require(destination!= address(0));
