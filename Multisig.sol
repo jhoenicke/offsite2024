@@ -150,6 +150,22 @@ contract Multisig is State {
             transactionIds[transactionIdsReverseMap[transactionId]] == transactionId;
     }
 
+    function addTransaction(
+        bytes32 transactionId,
+        address destination,
+        uint256 value,
+        bytes calldata data,
+        bool hasReward
+    ) onlyValidator internal {
+        transactionIds.push(transactionId);
+        transactionIdsReverseMap[transactionIds.length - 1] = transactionIds.length - 1;
+
+        transactions[transactionId].destination = destination;
+        transactions[transactionId].value = value;
+        transactions[transactionId].data = data;
+        transactions[transactionId].hasRewards = hasRewards;
+    }
+
     function voteForTransaction(
         bytes32 transactionId,
         address destination,
@@ -158,9 +174,15 @@ contract Multisig is State {
         bool hasReward
     ) onlyValidator public payable {
         if (!transactionExists(transactionId)) {
-            // TODO
-            // addTransaction(transactionId, );
+            addTransaction(transactionId, destination, value, data, hasRewards);
+        } else {
+            require transactions[transactionId].destination == destination;
+            require transactions[transactionId].value == value;
+            require transactions[transactionId].data == data;
+            require transactions[transactionId].hasRewards == hasRewards;
         }
+
+        confirmations[transactionId][msg.sender] = true;
     }
 
     function executeTransaction(bytes32 transactionId) public
